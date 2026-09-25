@@ -6,9 +6,13 @@ import java.util.List;
 
 public class Survey {
 
+    private static final int MIN_PARTICIPANTS = 3;
+    private static final int MAX_QUESTIONS = 3;
+    private static final int MIN_INDEX = 0;
+
     private static final String ERROR_NULL_TOPIC = "נושא הסקר אינו יכול להיות ריק.";
-    private static final String ERROR_NULL_QUESTIONS = "הסקר חייב להכיל לפחות שאלה אחת.";
-    private static final String ERROR_NULL_COMMUNITY = "הסקר חייב לכלול לפחות משתתף אחד.";
+    private static final String ERROR_INVALID_QUESTIONS = "הסקר חייב להכיל בין 1 ל-3 שאלות.";
+    private static final String ERROR_INVALID_COMMUNITY = "הסקר חייב לכלול לפחות 3 משתתפים.";
     private static final String ERROR_INVALID_INDEX = "אינדקס השאלה חורג מגבולות הסקר.";
 
     private final String topic;
@@ -19,11 +23,11 @@ public class Survey {
         if (topic == null || topic.trim().isEmpty()) {
             throw new IllegalArgumentException(ERROR_NULL_TOPIC);
         }
-        if (questions == null || questions.isEmpty()) {
-            throw new IllegalArgumentException(ERROR_NULL_QUESTIONS);
+        if (questions == null || questions.isEmpty() || questions.size() > MAX_QUESTIONS) {
+            throw new IllegalArgumentException(ERROR_INVALID_QUESTIONS);
         }
-        if (currentCommunity == null || currentCommunity.isEmpty()) {
-            throw new IllegalArgumentException(ERROR_NULL_COMMUNITY);
+        if (currentCommunity == null || currentCommunity.size() < MIN_PARTICIPANTS) {
+            throw new IllegalArgumentException(ERROR_INVALID_COMMUNITY);
         }
 
         this.topic = topic.trim();
@@ -46,7 +50,7 @@ public class Survey {
     }
 
     public Question getQuestionByIndex(int index) {
-        if (index < 0 || index >= questions.size()) {
+        if (index < MIN_INDEX || index >= questions.size()) {
             throw new IndexOutOfBoundsException(ERROR_INVALID_INDEX);
         }
         return questions.get(index);

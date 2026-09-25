@@ -25,6 +25,11 @@ public class SurveyResultsDialog extends JDialog {
     private static final int MAX_OPTION_WIDTH = 500;
     private static final int MAX_OPTION_HEIGHT = 50;
 
+    private static final int PROGRESS_MIN = 0;
+    private static final int PROGRESS_MAX = 100;
+    private static final int PERCENTAGE_MULTIPLIER = 100;
+    private static final int INITIAL_VOTES = 0;
+
     private static final String FONT_FAMILY = "Arial";
     private static final int FONT_SIZE_HEADER = 22;
     private static final int FONT_SIZE_QUESTION = 18;
@@ -73,10 +78,10 @@ public class SurveyResultsDialog extends JDialog {
                 }
 
                 Map<Integer, Integer> votesCount = new HashMap<>();
-                int totalVotesForQuestion = 0;
+                int totalVotesForQuestion = INITIAL_VOTES;
 
                 for (int j = 0; j < q.getOptions().size(); j++) {
-                    votesCount.put(j, 0);
+                    votesCount.put(j, INITIAL_VOTES);
                 }
 
                 for (SurveyParticipant p : survey.getParticipants()) {
@@ -92,7 +97,7 @@ public class SurveyResultsDialog extends JDialog {
                 List<OptionResult> resultsList = new ArrayList<>();
                 for (int j = 0; j < q.getOptions().size(); j++) {
                     int votes = votesCount.get(j);
-                    double percent = totalVotesForQuestion == 0 ? 0 : ((double) votes / totalVotesForQuestion) * 100;
+                    double percent = totalVotesForQuestion == INITIAL_VOTES ? INITIAL_VOTES : ((double) votes / totalVotesForQuestion) * PERCENTAGE_MULTIPLIER;
                     resultsList.add(new OptionResult(q.getOptions().get(j), votes, percent));
                 }
 
@@ -115,7 +120,7 @@ public class SurveyResultsDialog extends JDialog {
                     resLabel.setFont(new Font(FONT_FAMILY, Font.PLAIN, FONT_SIZE_OPTION));
                     resLabel.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 
-                    JProgressBar progressBar = new JProgressBar(0, 100);
+                    JProgressBar progressBar = new JProgressBar(PROGRESS_MIN, PROGRESS_MAX);
                     progressBar.setValue((int) res.getPercentage());
                     progressBar.setStringPainted(true);
                     progressBar.setString(String.format(PERCENT_FORMAT, res.getPercentage()));

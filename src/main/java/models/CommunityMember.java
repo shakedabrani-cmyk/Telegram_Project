@@ -5,7 +5,8 @@ import java.time.format.DateTimeFormatter;
 
 public class CommunityMember {
 
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
+    private static final String TIME_FORMAT_PATTERN = "HH:mm";
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(TIME_FORMAT_PATTERN);
     private static final String DEFAULT_UNKNOWN_NAME = "Unknown";
     private static final String EMPTY_STRING = "";
 

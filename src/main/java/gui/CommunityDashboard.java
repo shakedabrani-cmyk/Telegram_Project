@@ -6,7 +6,9 @@ import models.Survey;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.util.Comparator;
 
 public class CommunityDashboard extends JFrame {
 
@@ -18,12 +20,21 @@ public class CommunityDashboard extends JFrame {
     private static final int FONT_SIZE_TITLE = 18;
     private static final int TABLE_ROW_HEIGHT = 25;
 
+    private static final int PADDING_VERTICAL = 15;
+    private static final int PADDING_HORIZONTAL = 10;
+
+    private static final int COL_INDEX_NAME = 0;
+
     private static final String TITLE_DASHBOARD = "מערכת ניהול סקרים";
     private static final String TAB_COMMUNITY = "קהילת המשתמשים";
     private static final String TAB_CREATE_SURVEY = "יצירת סקר חדש";
     private static final String TAB_ACTIVE_SURVEY = "מעקב סקר פעיל";
     private static final String LABEL_TOTAL_MEMBERS = "סה\"כ חברים בקהילה: ";
     private static final String NO_USERNAME_PLACEHOLDER = "-";
+
+    private static final String COL_NAME = "שם";
+    private static final String COL_USERNAME = "Telegram Username";
+    private static final String COL_JOIN_TIME = "מועד הצטרפות";
 
     private DefaultTableModel tableModel;
     private JLabel memberCountLabel;
@@ -59,10 +70,10 @@ public class CommunityDashboard extends JFrame {
 
         memberCountLabel = new JLabel(LABEL_TOTAL_MEMBERS + totalMembers, SwingConstants.CENTER);
         memberCountLabel.setFont(new Font(FONT_FAMILY, Font.BOLD, FONT_SIZE_TITLE));
-        memberCountLabel.setBorder(BorderFactory.createEmptyBorder(15, 10, 15, 10));
+        memberCountLabel.setBorder(BorderFactory.createEmptyBorder(PADDING_VERTICAL, PADDING_HORIZONTAL, PADDING_VERTICAL, PADDING_HORIZONTAL));
         panel.add(memberCountLabel, BorderLayout.NORTH);
 
-        String[] columnNames = {"שם", "Telegram Username", "מועד הצטרפות"};
+        String[] columnNames = {COL_NAME, COL_USERNAME, COL_JOIN_TIME};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -71,6 +82,25 @@ public class CommunityDashboard extends JFrame {
         };
 
         JTable communityTable = new JTable(tableModel);
+
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
+
+        Comparator<String> hebrewFirstComparator = (s1, s2) -> {
+            boolean isHebrew1 = s1.matches(".*[א-ת].*");
+            boolean isHebrew2 = s2.matches(".*[א-ת].*");
+
+            if (isHebrew1 && !isHebrew2) {
+                return -1;
+            } else if (!isHebrew1 && isHebrew2) {
+                return 1;
+            } else {
+                return s1.compareToIgnoreCase(s2);
+            }
+        };
+
+        sorter.setComparator(COL_INDEX_NAME, hebrewFirstComparator);
+        communityTable.setRowSorter(sorter);
+
         communityTable.setRowHeight(TABLE_ROW_HEIGHT);
         communityTable.setFont(new Font(FONT_FAMILY, Font.PLAIN, FONT_SIZE_REGULAR));
 

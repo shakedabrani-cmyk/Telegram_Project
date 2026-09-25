@@ -14,7 +14,13 @@ import java.util.List;
 
 public class AIGeneratorService {
 
+    private static final int INDEX_NOT_FOUND = -1;
+    private static final int SUBSTRING_OFFSET = 1;
+    private static final char CHAR_JSON_ARRAY_START = '[';
+    private static final char CHAR_JSON_ARRAY_END = ']';
+
     private static final String TOKEN = "4ynnJSbIuaORGNUZ9IYEgro69H5tfoY6ORuroFYpZ1qOdOZ7bqaxFVd8q31IGXed";
+
     private static final String API_URL = "https://shaitest-production-3066.up.railway.app/api-request";
 
     private static final String JSON_FORMAT_REQUIREMENT =
@@ -26,6 +32,7 @@ public class AIGeneratorService {
     private static final String JSON_KEY_QUESTION = "question";
     private static final String JSON_KEY_OPTIONS = "options";
 
+    private static final String ERROR_INVALID_URL = "שגיאה פנימית: כתובת ה-API אינה תקינה. יש לוודא שהיא מתחילה ב-http:// או https://";
     private static final String ERROR_HTTP_FAILED = "שגיאה בתקשורת מול השרת. קוד שגיאה: ";
     private static final String ERROR_EMPTY_RESPONSE = "התקבלה תגובה ריקה מהשרת.";
     private static final String ERROR_MISSING_VALUE = "שגיאה מהשרת: הערך 'value' לא נמצא.";
@@ -37,7 +44,12 @@ public class AIGeneratorService {
 
         String finalPrompt = prompt + JSON_FORMAT_REQUIREMENT;
 
-        HttpUrl url = HttpUrl.parse(API_URL).newBuilder()
+        HttpUrl baseHttpUrl = HttpUrl.parse(API_URL);
+        if (baseHttpUrl == null) {
+            throw new Exception(ERROR_INVALID_URL);
+        }
+
+        HttpUrl url = baseHttpUrl.newBuilder()
                 .addQueryParameter("token", TOKEN)
                 .addQueryParameter("text", finalPrompt)
                 .build();
@@ -71,11 +83,11 @@ public class AIGeneratorService {
 
         String cleanJson = jsonString.trim();
 
-        int startIndex = cleanJson.indexOf('[');
-        int endIndex = cleanJson.lastIndexOf(']');
+        int startIndex = cleanJson.indexOf(CHAR_JSON_ARRAY_START);
+        int endIndex = cleanJson.lastIndexOf(CHAR_JSON_ARRAY_END);
 
-        if (startIndex != -1 && endIndex != -1) {
-            cleanJson = cleanJson.substring(startIndex, endIndex + 1);
+        if (startIndex != INDEX_NOT_FOUND && endIndex != INDEX_NOT_FOUND) {
+            cleanJson = cleanJson.substring(startIndex, endIndex + SUBSTRING_OFFSET);
         } else {
             throw new Exception(ERROR_INVALID_JSON_FORMAT);
         }

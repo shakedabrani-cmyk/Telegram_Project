@@ -6,6 +6,8 @@ import java.util.List;
 
 public class SurveyParticipant {
 
+    private static final int MIN_ANSWER_INDEX = 0;
+
     private static final String ERROR_NULL_MEMBER = "אובייקט חבר הקהילה אינו יכול להיות ריק.";
     private static final String ERROR_INVALID_INDEX = "אינדקס התשובה אינו תקין וחייב להיות חיובי.";
 
@@ -29,7 +31,7 @@ public class SurveyParticipant {
     }
 
     public void addAnswer(int optionIndex) {
-        if (optionIndex < 0) {
+        if (optionIndex < MIN_ANSWER_INDEX) {
             throw new IllegalArgumentException(ERROR_INVALID_INDEX);
         }
         this.answers.add(optionIndex);

@@ -19,7 +19,6 @@ import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 
-import java.awt.Toolkit;
 import javax.swing.Timer;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +28,49 @@ public class MySurveyBot extends TelegramLongPollingBot {
     private static final String BOT_TOKEN = "8489228069:AAE8OMNqi2IDuvCzwS7xJ_XwdXLc8_Qm6A4";
     private static final String BOT_USERNAME = "TheSurveysBot";
     private static final String CALLBACK_PREFIX_ANSWER = "ANS_";
+    private static final String CALLBACK_DATA_DELIMITER = "_";
 
     private static final int MAX_SURVEY_TIME_SECONDS = 300;
     private static final int REMINDER_TIME_SECONDS = 180;
     private static final int TIMER_DELAY_MS = 1000;
 
+    private static final int PART_INDEX_QUESTION = 1;
+    private static final int PART_INDEX_OPTION = 2;
+    private static final int FIRST_QUESTION_INDEX = 0;
+    private static final int TIME_LEFT_ZERO = 0;
+
+    private static final String CMD_START = "/start";
+    private static final String CMD_START_DESC = "הצטרפות לקהילת הסקרים";
+    private static final String CMD_HI_HEB = "היי";
+    private static final String CMD_HI_ENG = "hi";
+
+    private static final String PROGRESS_ICON_DONE = "🟩";
+    private static final String PROGRESS_ICON_PENDING = "⬜";
+
+    private static final String MSG_ALREADY_REGISTERED = "היי %s, אתה כבר רשום בקהילה שלנו! 📋\nאנא המתן בסבלנות לסקר הבא שיישלח בקרוב.";
+    private static final String MSG_WELCOME = "ברוך הבא לקהילת הסקרים שלנו, %s! 📊\nברגע שיופעל סקר חדש, אתה תקבל אותו ישירות לכאן.";
+    private static final String MSG_BROADCAST_NEW = "📣 עדכון: %s הצטרף/ה לקהילה!\nכעת אנחנו %d חברים.";
+
+    private static final String MSG_SURVEY_START = "🎉 סקר חדש בנושא '%s' מתחיל עכשיו!\n⏱️ שימו לב: יש לכם בדיוק 5 דקות להשלים את כל השאלות. בהצלחה!";
+    private static final String MSG_QUESTION_FORMAT = "%s %d/%d\nשאלה %d:\n\n%s";
+    private static final String MSG_ALREADY_ANSWERED = "כבר ענית על שאלה זו! 🚫";
+    private static final String MSG_ANSWER_SAVED = "תשובתך נקלטה בהצלחה! ✅";
+    private static final String MSG_SURVEY_COMPLETED = "תודה רבה על השתתפותך! סיימת את הסקר בהצלחה. 🎉";
+
+    private static final String MSG_REMINDER = "⏰ תזכורת: יש סקר פעיל שטרם סיימת! הזדרז, הסקר ייסגר בעוד 2 דקות.";
+    private static final String MSG_TIMEOUT = "הזמן להשיב על הסקר תם! 🕒 נשמח מאוד לשמוע את דעתך בסקרים הבאים שלנו. המשך יום מקסים! 😊";
+
+    private static final String MSG_SURVEY_INACTIVE = "הסקר אינו פעיל כרגע.";
+    private static final String MSG_ERROR_PROCESS = "שגיאה בעיבוד התשובה. אנא נסה שוב.";
+    private static final String MSG_REASON_EARLY = "הסקר נסגר מוקדם מהצפוי מכיוון שכל המשתתפים השלימו אותו!";
+    private static final String MSG_REASON_TIMEOUT = "הזמן המוקצב לסקר (5 דקות) תם!";
+
+    private static final String DIALOG_CLOSE_TITLE = "סיום סקר";
+    private static final String DIALOG_CLOSE_BODY = "הסקר נסגר!\n%s";
+
     private final List<CommunityMember> globalCommunity;
     private final CommunityDashboard dashboard;
+
     private Survey activeSurvey;
     private boolean isSurveyActive = false;
     private Timer activeSurveyTimer;
@@ -49,7 +84,7 @@ public class MySurveyBot extends TelegramLongPollingBot {
 
     private void setupBotMenu() {
         List<BotCommand> commands = new ArrayList<>();
-        commands.add(new BotCommand("/start", "הצטרפות לקהילת הסקרים"));
+        commands.add(new BotCommand(CMD_START, CMD_START_DESC));
 
         try {
             this.execute(new SetMyCommands(commands, new BotCommandScopeDefault(), null));
@@ -59,10 +94,14 @@ public class MySurveyBot extends TelegramLongPollingBot {
     }
 
     @Override
-    public String getBotUsername() { return BOT_USERNAME; }
+    public String getBotUsername() {
+        return BOT_USERNAME;
+    }
 
     @Override
-    public String getBotToken() { return BOT_TOKEN; }
+    public String getBotToken() {
+        return BOT_TOKEN;
+    }
 
     public boolean isSurveyActive() {
         return this.isSurveyActive;
@@ -83,7 +122,7 @@ public class MySurveyBot extends TelegramLongPollingBot {
         String firstName = message.getFrom().getFirstName();
         String username = message.getFrom().getUserName();
 
-        if (messageText.equals("/start") || messageText.equalsIgnoreCase("היי") || messageText.equalsIgnoreCase("hi")) {
+        if (messageText.equals(CMD_START) || messageText.equalsIgnoreCase(CMD_HI_HEB) || messageText.equalsIgnoreCase(CMD_HI_ENG)) {
             handleNewUser(chatId, firstName, username);
         }
     }
@@ -97,7 +136,7 @@ public class MySurveyBot extends TelegramLongPollingBot {
         answer.setCallbackQueryId(queryId);
 
         if (activeSurvey == null || !isSurveyActive) {
-            answer.setText("הסקר אינו פעיל כרגע.");
+            answer.setText(MSG_SURVEY_INACTIVE);
             sendTelegramAction(answer);
             return;
         }
@@ -109,9 +148,9 @@ public class MySurveyBot extends TelegramLongPollingBot {
 
     private void processSurveyAnswer(String callData, long chatId, AnswerCallbackQuery answer) {
         try {
-            String[] parts = callData.split("_");
-            int currentQuestionIndex = Integer.parseInt(parts[1]);
-            int selectedOptionIndex = Integer.parseInt(parts[2]);
+            String[] parts = callData.split(CALLBACK_DATA_DELIMITER);
+            int currentQuestionIndex = Integer.parseInt(parts[PART_INDEX_QUESTION]);
+            int selectedOptionIndex = Integer.parseInt(parts[PART_INDEX_OPTION]);
 
             boolean alreadyAnswered = false;
 
@@ -127,10 +166,11 @@ public class MySurveyBot extends TelegramLongPollingBot {
             }
 
             if (alreadyAnswered) {
-                answer.setText("כבר ענית על שאלה זו! 🚫");
+                answer.setText(MSG_ALREADY_ANSWERED);
                 sendTelegramAction(answer);
                 return;
             } else {
+                answer.setText(MSG_ANSWER_SAVED);
                 sendTelegramAction(answer);
             }
 
@@ -140,13 +180,13 @@ public class MySurveyBot extends TelegramLongPollingBot {
             if (nextQuestionIndex < activeSurvey.getQuestions().size()) {
                 sendQuestionWithOptions(chatId, activeSurvey.getQuestionByIndex(nextQuestionIndex), nextQuestionIndex);
             } else {
-                sendMessage(chatId, "תודה רבה על השתתפותך! סיימת את הסקר בהצלחה. 🎉");
+                sendMessage(chatId, MSG_SURVEY_COMPLETED);
             }
 
             checkIfAllFinished();
 
         } catch (Exception e) {
-            answer.setText("שגיאה בעיבוד התשובה. אנא נסה שוב.");
+            answer.setText(MSG_ERROR_PROCESS);
             sendTelegramAction(answer);
         }
     }
@@ -173,30 +213,40 @@ public class MySurveyBot extends TelegramLongPollingBot {
         }
 
         if (everyoneDone) {
-            closeSurvey("הסקר נסגר מוקדם מהצפוי מכיוון שכל המשתתפים השלימו אותו!");
+            closeSurvey(MSG_REASON_EARLY);
         }
     }
 
     private void closeSurvey(String reason) {
         if (!isSurveyActive) return;
 
-        Toolkit.getDefaultToolkit().beep();
         isSurveyActive = false;
 
         if (activeSurveyTimer != null) {
             activeSurveyTimer.stop();
         }
 
-        dashboard.getActiveSurveyPanel().updateTimeRemaining(0);
-        CustomDialogs.showMessage(dashboard, "סיום סקר", "הסקר נסגר!\n" + reason, false);
+        dashboard.getActiveSurveyPanel().updateTimeRemaining(TIME_LEFT_ZERO);
+        CustomDialogs.showMessage(dashboard, DIALOG_CLOSE_TITLE, String.format(DIALOG_CLOSE_BODY, reason), false);
         dashboard.showSurveyResults(activeSurvey);
+    }
+
+    private void notifyIncompleteParticipants() {
+        if (activeSurvey == null) return;
+        int totalQuestions = activeSurvey.getQuestions().size();
+
+        for (SurveyParticipant p : activeSurvey.getParticipants()) {
+            if (p.getAnswers().size() < totalQuestions) {
+                sendMessage(p.getMember().getChatId(), MSG_TIMEOUT);
+            }
+        }
     }
 
     private void sendReminders() {
         int totalQuestions = activeSurvey.getQuestions().size();
         for (SurveyParticipant p : activeSurvey.getParticipants()) {
             if (p.getAnswers().size() < totalQuestions) {
-                sendMessage(p.getMember().getChatId(), "⏰ תזכורת: יש סקר פעיל שטרם סיימת! הזדרז, הסקר ייסגר בעוד 2 דקות.");
+                sendMessage(p.getMember().getChatId(), MSG_REMINDER);
             }
         }
     }
@@ -204,7 +254,7 @@ public class MySurveyBot extends TelegramLongPollingBot {
     private void handleNewUser(long chatId, String firstName, String username) {
         for (CommunityMember member : globalCommunity) {
             if (member.getChatId() == chatId) {
-                sendMessage(chatId, "היי " + firstName + ", אתה כבר רשום בקהילה שלנו! 📋\nאנא המתן בסבלנות לסקר הבא שיישלח בקרוב.");
+                sendMessage(chatId, String.format(MSG_ALREADY_REGISTERED, firstName));
                 return;
             }
         }
@@ -212,15 +262,13 @@ public class MySurveyBot extends TelegramLongPollingBot {
         CommunityMember newMember = new CommunityMember(chatId, firstName, username);
         globalCommunity.add(newMember);
 
-        String welcomeMessage = "ברוך הבא לקהילת הסקרים שלנו, " + firstName + "! 📊\n" +
-                "ברגע שיופעל סקר חדש, אתה תקבל אותו ישירות לכאן.";
-        sendMessage(chatId, welcomeMessage);
+        sendMessage(chatId, String.format(MSG_WELCOME, firstName));
         broadcastNewMember(chatId, firstName);
         dashboard.addMemberToUI(newMember);
     }
 
     private void broadcastNewMember(long newMemberChatId, String newMemberName) {
-        String text = "📣 עדכון: " + newMemberName + " הצטרף/ה לקהילה!\nכעת אנחנו " + globalCommunity.size() + " חברים.";
+        String text = String.format(MSG_BROADCAST_NEW, newMemberName, globalCommunity.size());
         for (CommunityMember member : globalCommunity) {
             if (member.getChatId() != newMemberChatId) {
                 sendMessage(member.getChatId(), text);
@@ -239,10 +287,26 @@ public class MySurveyBot extends TelegramLongPollingBot {
         }
     }
 
+    private String generateProgressBar(int currentIndex, int totalQuestions) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < totalQuestions; i++) {
+            if (i <= currentIndex) {
+                sb.append(PROGRESS_ICON_DONE);
+            } else {
+                sb.append(PROGRESS_ICON_PENDING);
+            }
+        }
+        return sb.toString();
+    }
+
     public void sendQuestionWithOptions(long chatId, Question question, int questionIndex) {
+        int totalQuestions = activeSurvey.getQuestions().size();
+        String progressBar = generateProgressBar(questionIndex, totalQuestions);
+        String questionHeader = String.format(MSG_QUESTION_FORMAT, progressBar, (questionIndex + 1), totalQuestions, (questionIndex + 1), question.getText());
+
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
-        message.setText("שאלה " + (questionIndex + 1) + ":\n" + question.getText());
+        message.setText(questionHeader);
 
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
@@ -252,7 +316,7 @@ public class MySurveyBot extends TelegramLongPollingBot {
             List<InlineKeyboardButton> rowInline = new ArrayList<>();
             InlineKeyboardButton button = new InlineKeyboardButton();
             button.setText(options.get(i));
-            button.setCallbackData(CALLBACK_PREFIX_ANSWER + questionIndex + "_" + i);
+            button.setCallbackData(CALLBACK_PREFIX_ANSWER + questionIndex + CALLBACK_DATA_DELIMITER + i);
             rowInline.add(button);
             rowsInline.add(rowInline);
         }
@@ -273,13 +337,12 @@ public class MySurveyBot extends TelegramLongPollingBot {
 
         dashboard.getActiveSurveyPanel().updateSurveyStatus(activeSurvey);
 
-        String introMessage = "🎉 סקר חדש בנושא '" + newSurvey.getTopic() + "' מתחיל עכשיו!\n" +
-                "⏱️ שימו לב: יש לכם בדיוק 5 דקות להשלים את כל השאלות. בהצלחה!";
+        String introMessage = String.format(MSG_SURVEY_START, newSurvey.getTopic());
 
         for (SurveyParticipant p : activeSurvey.getParticipants()) {
             long chatId = p.getMember().getChatId();
             sendMessage(chatId, introMessage);
-            sendQuestionWithOptions(chatId, activeSurvey.getQuestionByIndex(0), 0);
+            sendQuestionWithOptions(chatId, activeSurvey.getQuestionByIndex(FIRST_QUESTION_INDEX), FIRST_QUESTION_INDEX);
         }
 
         if (activeSurveyTimer != null) {
@@ -297,7 +360,8 @@ public class MySurveyBot extends TelegramLongPollingBot {
             }
 
             if (secondsLeft <= 0) {
-                closeSurvey("הזמן המוקצב לסקר (5 דקות) תם!");
+                notifyIncompleteParticipants();
+                closeSurvey(MSG_REASON_TIMEOUT);
             }
         });
 

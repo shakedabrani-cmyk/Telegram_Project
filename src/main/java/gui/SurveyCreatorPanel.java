@@ -18,7 +18,7 @@ public class SurveyCreatorPanel extends JPanel {
 
     private static final String FONT_FAMILY = "Arial";
 
-    private static final int MIN_COMMUNITY_SIZE = 1;
+    private static final int MIN_COMMUNITY_SIZE = 3;
     private static final int MAX_DELAY_MINUTES = 1440;
 
     private static final int TIMER_DELAY_AI_PROGRESS = 150;
@@ -26,8 +26,36 @@ public class SurveyCreatorPanel extends JPanel {
     private static final int TIMER_DELAY_AI_ERROR = 2000;
     private static final int TIMER_DELAY_COUNTDOWN = 1000;
 
-    private static final Font FONT_BOLD_14 = new Font(FONT_FAMILY, Font.BOLD, 14);
-    private static final Font FONT_PLAIN_16 = new Font(FONT_FAMILY, Font.PLAIN, 16);
+    private static final int FONT_SIZE_BOLD_14 = 14;
+    private static final int FONT_SIZE_PLAIN_16 = 16;
+    private static final Font FONT_BOLD_14 = new Font(FONT_FAMILY, Font.BOLD, FONT_SIZE_BOLD_14);
+    private static final Font FONT_PLAIN_16 = new Font(FONT_FAMILY, Font.PLAIN, FONT_SIZE_PLAIN_16);
+
+    private static final int BORDER_PADDING_MAIN = 15;
+    private static final int BORDER_PADDING_PANEL = 10;
+    private static final int LAYOUT_GAP_SMALL = 5;
+    private static final int LAYOUT_GAP_MEDIUM = 10;
+    private static final int LAYOUT_GAP_LARGE = 15;
+
+    private static final int TOPIC_FIELD_COLUMNS = 25;
+    private static final int DELAY_FIELD_COLUMNS = 3;
+    private static final int MANUAL_OPTION_COLUMNS = 20;
+    private static final int PROGRESS_BAR_MIN = 0;
+    private static final int PROGRESS_BAR_MAX = 100;
+    private static final int MANUAL_PANELS_COUNT = 3;
+    private static final int GRID_OPTIONS_ROWS = 4;
+    private static final int GRID_OPTIONS_COLS = 1;
+
+    private static final int SECONDS_IN_MINUTE = 60;
+    private static final int MILLIS_IN_SECOND = 1000;
+    private static final int PROGRESS_MOCK_INCREMENT = 1;
+    private static final int PROGRESS_MOCK_STAGE_1 = 30;
+    private static final int PROGRESS_MOCK_STAGE_2 = 60;
+    private static final int PROGRESS_MOCK_MAX_LIMIT = 90;
+    private static final int TAB_INDEX_AI = 1;
+    private static final int MIN_MANDATORY_OPTIONS = 2;
+    private static final Integer[] Q_COUNT_OPTIONS = {1, 2, 3};
+    private static final Integer[] OPT_COUNT_OPTIONS = {2, 3, 4};
 
     private static final Color COLOR_BTN_DEFAULT = new Color(220, 220, 220);
     private static final Color COLOR_BTN_HOVER_SEND = new Color(173, 216, 230);
@@ -52,11 +80,39 @@ public class SurveyCreatorPanel extends JPanel {
     private static final String MSG_AI_FORMATTING = "מנסח תשובות מדויקות...";
     private static final String MSG_AI_SUCCESS = "הושלם בהצלחה!";
     private static final String MSG_AI_FAILED = "שגיאה ביצירה!";
+    private static final String MSG_AI_SUCCESS_BODY = "הסקר נוצר בהצלחה!\n\n";
 
     private static final String ERROR_SYSTEM_BUSY_TITLE = "מערכת עסוקה";
     private static final String ERROR_TITLE = "שגיאה";
     private static final String SUCCESS_TITLE = "הצלחה";
     private static final String CONFIRM_TITLE = "אישור שילוח סקר";
+
+    private static final String ERR_NO_TOPIC_AI = "אנא הזן נושא לסקר בתיבה העליונה.";
+    private static final String ERR_NO_TOPIC = "יש להזין נושא כללי לסקר בראש המסך.";
+    private static final String ERR_AI_BUSY = "המערכת מייצרת כעת שאלות AI. אנא המתן לסיום התהליך.";
+    private static final String ERR_ACTIVE_SURVEY = "שגיאה: קיים סקר פעיל כרגע.\nניתן לנהל סקר אחד בלבד בכל פעם.";
+    private static final String ERR_COUNTDOWN_ACTIVE = "שגיאה: קיים סקר שממתין לשילוח (ספירה לאחור רצה).\nלא ניתן להוסיף סקר חדש.";
+    private static final String ERR_MIN_COMMUNITY = "שגיאה: דרוש לפחות %d חברי קהילה כדי להתחיל סקר.";
+    private static final String ERR_AI_NOT_CREATED = "יש ליצור שאלות AI לפני השילוח.";
+    private static final String ERR_MANUAL_FILL = "שגיאה במילוי ידני";
+    private static final String ERR_NO_VALID_Q = "יש למלא לפחות שאלה אחת תקינה.";
+    private static final String ERR_INVALID_DELAY = "הזן מספר דקות תקין להשהייה (בין 0 ל-%d).";
+
+    private static final String ERR_Q_NO_TEXT = "בשאלה %d חסר נוסח השאלה.";
+    private static final String ERR_Q_DUPLICATE = "בשאלה %d יש כפילות: התשובה '%s' מופיעה פעמיים. נא לתקן.";
+    private static final String ERR_Q_MIN_OPTS = "בשאלה %d חובה להזין לפחות 2 אפשרויות תשובה.";
+    private static final String ERR_Q_MAX_OPTS = "בשאלה %d ניתן להזין עד 4 אפשרויות בלבד.";
+
+    private static final String MSG_CONFIRM_SEND = "האם אתה בטוח שברצונך לשגר את הסקר בנושא:\n'%s'\nל-%d משתתפים?";
+    private static final String MSG_SUCCESS_SEND = "הסקר נשלח בהצלחה ל-%d משתתפים!";
+    private static final String MSG_COUNTDOWN_RUNNING = "הסקר יישלח בעוד: %02d:%02d";
+    private static final String MSG_COUNTDOWN_DONE = "הסקר נשלח!";
+
+    private static final String LBL_MANUAL_Q_TITLE = "שאלה %d";
+    private static final String LBL_MANUAL_INCLUDE = "כלול שאלה זו";
+    private static final String LBL_MANUAL_Q_TEXT = "נוסח השאלה:";
+    private static final String LBL_MANUAL_OPT_MANDATORY = "אפשרות %d (חובה):";
+    private static final String LBL_MANUAL_OPT_OPTIONAL = "אפשרות %d (רשות):";
 
     private static final String PROMPT_TEMPLATE =
             "נושא הסקר: %s\n" +
@@ -88,15 +144,15 @@ public class SurveyCreatorPanel extends JPanel {
 
     public SurveyCreatorPanel() {
         aiService = new AIGeneratorService();
-        setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        setLayout(new BorderLayout(LAYOUT_GAP_MEDIUM, LAYOUT_GAP_MEDIUM));
+        setBorder(BorderFactory.createEmptyBorder(BORDER_PADDING_MAIN, BORDER_PADDING_MAIN, BORDER_PADDING_MAIN, BORDER_PADDING_MAIN));
         setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 
         JPanel topicPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         topicPanel.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         topicPanel.add(new JLabel(LABEL_TOPIC));
 
-        topicField = new JTextField(25);
+        topicField = new JTextField(TOPIC_FIELD_COLUMNS);
         topicField.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         topicField.setFont(FONT_BOLD_14);
         topicPanel.add(topicField);
@@ -106,14 +162,16 @@ public class SurveyCreatorPanel extends JPanel {
         creationMethodTabs.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         creationMethodTabs.setFont(FONT_BOLD_14);
 
-        manualQuestionPanels = new ManualQuestionPanel[3];
+        manualQuestionPanels = new ManualQuestionPanel[MANUAL_PANELS_COUNT];
         JPanel manualPanel = createManualPanel();
         creationMethodTabs.addTab(TAB_MANUAL, manualPanel);
 
-        questionsCountCombo = new JComboBox<>(new Integer[]{1, 2, 3});
-        optionsCountCombo = new JComboBox<>(new Integer[]{2, 3, 4});
+        questionsCountCombo = new JComboBox<>(Q_COUNT_OPTIONS);
+        optionsCountCombo = new JComboBox<>(OPT_COUNT_OPTIONS);
+
         generateAiBtn = new JButton(BTN_AI_TEXT);
-        aiLoadingBar = new JProgressBar(0, 100);
+
+        aiLoadingBar = new JProgressBar(PROGRESS_BAR_MIN, PROGRESS_BAR_MAX);
         aiResultArea = new JTextArea();
 
         JPanel aiPanel = createAiPanel();
@@ -125,7 +183,7 @@ public class SurveyCreatorPanel extends JPanel {
         bottomPanel.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 
         bottomPanel.add(new JLabel(LABEL_DELAY));
-        delayField = new JTextField("0", 3);
+        delayField = new JTextField("0", DELAY_FIELD_COLUMNS);
         delayField.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         bottomPanel.add(delayField);
 
@@ -166,21 +224,21 @@ public class SurveyCreatorPanel extends JPanel {
     }
 
     private JPanel createAiPanel() {
-        JPanel panel = new JPanel(new BorderLayout(5, 5));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel panel = new JPanel(new BorderLayout(LAYOUT_GAP_SMALL, LAYOUT_GAP_SMALL));
+        panel.setBorder(BorderFactory.createEmptyBorder(BORDER_PADDING_PANEL, BORDER_PADDING_PANEL, BORDER_PADDING_PANEL, BORDER_PADDING_PANEL));
 
-        JPanel configPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 5));
+        JPanel configPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, LAYOUT_GAP_LARGE, LAYOUT_GAP_SMALL));
         configPanel.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 
         configPanel.add(new JLabel(AI_LABEL_Q_COUNT));
-        questionsCountCombo.setSelectedItem(3);
+        questionsCountCombo.setSelectedItem(Q_COUNT_OPTIONS[2]);
         configPanel.add(questionsCountCombo);
 
         configPanel.add(new JLabel(AI_LABEL_OPT_COUNT));
-        optionsCountCombo.setSelectedItem(4);
+        optionsCountCombo.setSelectedItem(OPT_COUNT_OPTIONS[2]);
         configPanel.add(optionsCountCombo);
 
-        JPanel topRow = new JPanel(new BorderLayout(5, 5));
+        JPanel topRow = new JPanel(new BorderLayout(LAYOUT_GAP_SMALL, LAYOUT_GAP_SMALL));
         topRow.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         topRow.add(configPanel, BorderLayout.NORTH);
 
@@ -214,13 +272,13 @@ public class SurveyCreatorPanel extends JPanel {
     private JPanel createManualPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(BORDER_PADDING_PANEL, BORDER_PADDING_PANEL, BORDER_PADDING_PANEL, BORDER_PADDING_PANEL));
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < MANUAL_PANELS_COUNT; i++) {
             boolean isMandatory = (i == 0);
             manualQuestionPanels[i] = new ManualQuestionPanel(i + 1, isMandatory);
             panel.add(manualQuestionPanels[i]);
-            panel.add(Box.createRigidArea(new Dimension(0, 10)));
+            panel.add(Box.createRigidArea(new Dimension(0, LAYOUT_GAP_MEDIUM)));
         }
 
         JScrollPane scroll = new JScrollPane(panel);
@@ -234,7 +292,7 @@ public class SurveyCreatorPanel extends JPanel {
     private void generateSurveyViaAi() {
         String topic = topicField.getText().trim();
         if (topic.isEmpty()) {
-            CustomDialogs.showMessage(this, ERROR_TITLE, "אנא הזן נושא לסקר בתיבה העליונה.", true);
+            CustomDialogs.showMessage(this, ERROR_TITLE, ERR_NO_TOPIC_AI, true);
             return;
         }
 
@@ -248,17 +306,17 @@ public class SurveyCreatorPanel extends JPanel {
         sendSurveyBtn.setEnabled(false);
         isAiGenerating = true;
 
-        aiLoadingBar.setValue(0);
+        aiLoadingBar.setValue(PROGRESS_BAR_MIN);
         aiLoadingBar.setString(MSG_AI_CONNECTING);
         aiLoadingBar.setForeground(COLOR_PRIMARY);
         aiLoadingBar.setVisible(true);
 
         aiProgressTimer = new Timer(TIMER_DELAY_AI_PROGRESS, e -> {
             int current = aiLoadingBar.getValue();
-            if (current < 90) {
-                aiLoadingBar.setValue(current + 1);
-                if (current == 30) aiLoadingBar.setString(MSG_AI_WRITING);
-                if (current == 60) aiLoadingBar.setString(MSG_AI_FORMATTING);
+            if (current < PROGRESS_MOCK_MAX_LIMIT) {
+                aiLoadingBar.setValue(current + PROGRESS_MOCK_INCREMENT);
+                if (current == PROGRESS_MOCK_STAGE_1) aiLoadingBar.setString(MSG_AI_WRITING);
+                if (current == PROGRESS_MOCK_STAGE_2) aiLoadingBar.setString(MSG_AI_FORMATTING);
             }
         });
         aiProgressTimer.start();
@@ -268,7 +326,7 @@ public class SurveyCreatorPanel extends JPanel {
                 generatedQuestions = aiService.generateSurveyQuestions(enhancedTopic);
 
                 StringBuilder sb = new StringBuilder();
-                sb.append("הסקר נוצר בהצלחה!\n\n");
+                sb.append(MSG_AI_SUCCESS_BODY);
                 for (int i = 0; i < generatedQuestions.size(); i++) {
                     Question q = generatedQuestions.get(i);
                     sb.append("שאלה ").append(i + 1).append(": ").append(q.getText()).append("\n");
@@ -280,7 +338,7 @@ public class SurveyCreatorPanel extends JPanel {
 
                 SwingUtilities.invokeLater(() -> {
                     aiProgressTimer.stop();
-                    aiLoadingBar.setValue(100);
+                    aiLoadingBar.setValue(PROGRESS_BAR_MAX);
                     aiLoadingBar.setForeground(COLOR_SUCCESS);
                     aiLoadingBar.setString(MSG_AI_SUCCESS);
 
@@ -295,11 +353,11 @@ public class SurveyCreatorPanel extends JPanel {
             } catch (Exception ex) {
                 SwingUtilities.invokeLater(() -> {
                     aiProgressTimer.stop();
-                    aiLoadingBar.setValue(100);
+                    aiLoadingBar.setValue(PROGRESS_BAR_MAX);
                     aiLoadingBar.setForeground(COLOR_ERROR);
                     aiLoadingBar.setString(MSG_AI_FAILED);
 
-                    aiResultArea.setText("שגיאה:\n" + ex.getMessage());
+                    aiResultArea.setText(ERROR_TITLE + ":\n" + ex.getMessage());
                     finalizeAiGeneration();
 
                     new Timer(TIMER_DELAY_AI_ERROR, evt -> {
@@ -319,37 +377,37 @@ public class SurveyCreatorPanel extends JPanel {
 
     private void validateAndSendSurvey() {
         if (isAiGenerating) {
-            CustomDialogs.showMessage(this, ERROR_SYSTEM_BUSY_TITLE, "המערכת מייצרת כעת שאלות AI. אנא המתן לסיום התהליך.", true);
+            CustomDialogs.showMessage(this, ERROR_SYSTEM_BUSY_TITLE, ERR_AI_BUSY, true);
             return;
         }
 
         if (myBot != null && myBot.isSurveyActive()) {
-            CustomDialogs.showMessage(this, ERROR_SYSTEM_BUSY_TITLE, "שגיאה: קיים סקר פעיל כרגע.\nלפי ההנחיות ניתן לנהל סקר אחד בלבד בכל פעם.", true);
+            CustomDialogs.showMessage(this, ERROR_SYSTEM_BUSY_TITLE, ERR_ACTIVE_SURVEY, true);
             return;
         }
 
         if (isCountdownActive) {
-            CustomDialogs.showMessage(this, ERROR_SYSTEM_BUSY_TITLE, "שגיאה: קיים סקר שממתין לשילוח (ספירה לאחור רצה).\nלא ניתן להוסיף סקר חדש.", true);
+            CustomDialogs.showMessage(this, ERROR_SYSTEM_BUSY_TITLE, ERR_COUNTDOWN_ACTIVE, true);
             return;
         }
 
         if (globalCommunity == null || globalCommunity.size() < MIN_COMMUNITY_SIZE) {
-            CustomDialogs.showMessage(this, ERROR_TITLE, "שגיאה: דרוש לפחות " + MIN_COMMUNITY_SIZE + " חברי קהילה כדי להתחיל סקר.", true);
+            CustomDialogs.showMessage(this, ERROR_TITLE, String.format(ERR_MIN_COMMUNITY, MIN_COMMUNITY_SIZE), true);
             return;
         }
 
         String topic = topicField.getText().trim();
         if (topic.isEmpty()) {
-            CustomDialogs.showMessage(this, ERROR_TITLE, "יש להזין נושא כללי לסקר בראש המסך.", true);
+            CustomDialogs.showMessage(this, ERROR_TITLE, ERR_NO_TOPIC, true);
             return;
         }
 
         List<Question> finalQuestionsToSend;
-        boolean isAiTabSelected = (creationMethodTabs.getSelectedIndex() == 1);
+        boolean isAiTabSelected = (creationMethodTabs.getSelectedIndex() == TAB_INDEX_AI);
 
         if (isAiTabSelected) {
             if (generatedQuestions == null || generatedQuestions.isEmpty()) {
-                CustomDialogs.showMessage(this, ERROR_TITLE, "יש ליצור שאלות AI לפני השילוח.", true);
+                CustomDialogs.showMessage(this, ERROR_TITLE, ERR_AI_NOT_CREATED, true);
                 return;
             }
             finalQuestionsToSend = generatedQuestions;
@@ -361,10 +419,10 @@ public class SurveyCreatorPanel extends JPanel {
                     if (q != null) finalQuestionsToSend.add(q);
                 }
                 if (finalQuestionsToSend.isEmpty()) {
-                    throw new Exception("יש למלא לפחות שאלה אחת תקינה.");
+                    throw new Exception(ERR_NO_VALID_Q);
                 }
             } catch (Exception ex) {
-                CustomDialogs.showMessage(this, "שגיאה במילוי ידני", ex.getMessage(), true);
+                CustomDialogs.showMessage(this, ERR_MANUAL_FILL, ex.getMessage(), true);
                 return;
             }
         }
@@ -376,11 +434,11 @@ public class SurveyCreatorPanel extends JPanel {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException ex) {
-            CustomDialogs.showMessage(this, ERROR_TITLE, "הזן מספר דקות תקין להשהייה (בין 0 ל-" + MAX_DELAY_MINUTES + ").", true);
+            CustomDialogs.showMessage(this, ERROR_TITLE, String.format(ERR_INVALID_DELAY, MAX_DELAY_MINUTES), true);
             return;
         }
 
-        String msg = String.format("האם אתה בטוח שברצונך לשגר את הסקר בנושא:\n'%s'\nל-%d משתתפים?", topic, globalCommunity.size());
+        String msg = String.format(MSG_CONFIRM_SEND, topic, globalCommunity.size());
 
         boolean confirmed = CustomDialogs.showConfirm(this, CONFIRM_TITLE, msg);
         if (!confirmed) {
@@ -395,14 +453,26 @@ public class SurveyCreatorPanel extends JPanel {
     }
 
     private void executeSurveySend(String topic, List<Question> questions) {
-        Survey newSurvey = new Survey(topic, questions, globalCommunity);
-        myBot.startSurvey(newSurvey);
-        countdownLabel.setText("הסקר נשלח!");
+        try {
+            Survey newSurvey = new Survey(topic, questions, globalCommunity);
 
-        CustomDialogs.showMessage(this, SUCCESS_TITLE, "הסקר נשלח בהצלחה ל-" + newSurvey.getTotalParticipants() + " משתתפים!", false);
+            myBot.startSurvey(newSurvey);
+            countdownLabel.setText(MSG_COUNTDOWN_DONE);
 
-        topicField.setEnabled(true);
-        delayField.setEnabled(true);
+            CustomDialogs.showMessage(this, SUCCESS_TITLE, String.format(MSG_SUCCESS_SEND, newSurvey.getTotalParticipants()), false);
+
+            topicField.setEnabled(true);
+            delayField.setEnabled(true);
+
+        } catch (Exception ex) {
+            CustomDialogs.showMessage(this, ERROR_TITLE, ex.getMessage(), true);
+
+            sendSurveyBtn.setEnabled(true);
+            generateAiBtn.setEnabled(true);
+            topicField.setEnabled(true);
+            delayField.setEnabled(true);
+            countdownLabel.setText("");
+        }
     }
 
     private void startCountdown(int minutes, String topic, List<Question> questions) {
@@ -412,12 +482,12 @@ public class SurveyCreatorPanel extends JPanel {
         topicField.setEnabled(false);
         delayField.setEnabled(false);
 
-        int totalSeconds = minutes * 60;
+        int totalSeconds = minutes * SECONDS_IN_MINUTE;
         long startTime = System.currentTimeMillis();
 
         Timer timer = new Timer(TIMER_DELAY_COUNTDOWN, null);
         timer.addActionListener(e -> {
-            long elapsed = (System.currentTimeMillis() - startTime) / 1000;
+            long elapsed = (System.currentTimeMillis() - startTime) / MILLIS_IN_SECOND;
             long remaining = totalSeconds - elapsed;
             if (remaining <= 0) {
                 ((Timer)e.getSource()).stop();
@@ -426,7 +496,7 @@ public class SurveyCreatorPanel extends JPanel {
                 sendSurveyBtn.setEnabled(true);
                 generateAiBtn.setEnabled(true);
             } else {
-                countdownLabel.setText(String.format("הסקר יישלח בעוד: %02d:%02d", remaining / 60, remaining % 60));
+                countdownLabel.setText(String.format(MSG_COUNTDOWN_RUNNING, remaining / SECONDS_IN_MINUTE, remaining % SECONDS_IN_MINUTE));
             }
         });
         timer.start();
@@ -440,17 +510,17 @@ public class SurveyCreatorPanel extends JPanel {
 
         public ManualQuestionPanel(int qNumber, boolean isMandatory) {
             this.qNum = qNumber;
-            setLayout(new BorderLayout(5, 5));
+            setLayout(new BorderLayout(LAYOUT_GAP_SMALL, LAYOUT_GAP_SMALL));
             setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 
-            TitledBorder border = BorderFactory.createTitledBorder("שאלה " + qNumber);
+            TitledBorder border = BorderFactory.createTitledBorder(String.format(LBL_MANUAL_Q_TITLE, qNumber));
             border.setTitleJustification(TitledBorder.RIGHT);
             setBorder(border);
 
             JPanel topRow = new JPanel(new FlowLayout(FlowLayout.RIGHT));
             topRow.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 
-            enableCheckBox = new JCheckBox("כלול שאלה זו");
+            enableCheckBox = new JCheckBox(LBL_MANUAL_INCLUDE);
             enableCheckBox.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
             if (isMandatory) {
                 enableCheckBox.setSelected(true);
@@ -460,21 +530,21 @@ public class SurveyCreatorPanel extends JPanel {
             }
             topRow.add(enableCheckBox);
 
-            topRow.add(new JLabel("נוסח השאלה:"));
-            questionField = new JTextField(25);
+            topRow.add(new JLabel(LBL_MANUAL_Q_TEXT));
+            questionField = new JTextField(TOPIC_FIELD_COLUMNS);
             questionField.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
             topRow.add(questionField);
             add(topRow, BorderLayout.NORTH);
 
-            JPanel optionsPanel = new JPanel(new GridLayout(4, 1, 2, 2));
+            JPanel optionsPanel = new JPanel(new GridLayout(GRID_OPTIONS_ROWS, GRID_OPTIONS_COLS, LAYOUT_GAP_SMALL / 2, LAYOUT_GAP_SMALL / 2));
             optionsPanel.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-            optionFields = new JTextField[4];
-            for (int i = 0; i < 4; i++) {
+            optionFields = new JTextField[GRID_OPTIONS_ROWS];
+            for (int i = 0; i < GRID_OPTIONS_ROWS; i++) {
                 JPanel optRow = new JPanel(new FlowLayout(FlowLayout.RIGHT));
                 optRow.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-                String labelStr = "אפשרות " + (i + 1) + (i < 2 ? " (חובה):" : " (רשות):");
+                String labelStr = String.format(i < MIN_MANDATORY_OPTIONS ? LBL_MANUAL_OPT_MANDATORY : LBL_MANUAL_OPT_OPTIONAL, (i + 1));
                 optRow.add(new JLabel(labelStr));
-                optionFields[i] = new JTextField(20);
+                optionFields[i] = new JTextField(MANUAL_OPTION_COLUMNS);
                 optionFields[i].setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
                 optRow.add(optionFields[i]);
                 optionsPanel.add(optRow);
@@ -494,21 +564,21 @@ public class SurveyCreatorPanel extends JPanel {
             if (!enableCheckBox.isSelected()) return null;
 
             String qText = questionField.getText().trim();
-            if (qText.isEmpty()) throw new Exception("בשאלה " + qNum + " חסר נוסח השאלה.");
+            if (qText.isEmpty()) throw new Exception(String.format(ERR_Q_NO_TEXT, qNum));
 
             List<String> options = new ArrayList<>();
             for (JTextField tf : optionFields) {
                 String optText = tf.getText().trim();
                 if (!optText.isEmpty()) {
                     if (options.contains(optText)) {
-                        throw new Exception("בשאלה " + qNum + " יש כפילות: התשובה '" + optText + "' מופיעה פעמיים. נא לתקן.");
+                        throw new Exception(String.format(ERR_Q_DUPLICATE, qNum, optText));
                     }
                     options.add(optText);
                 }
             }
 
-            if (options.size() < 2) throw new Exception("בשאלה " + qNum + " חובה להזין לפחות 2 אפשרויות תשובה.");
-            if (options.size() > 4) throw new Exception("בשאלה " + qNum + " ניתן להזין עד 4 אפשרויות בלבד.");
+            if (options.size() < MIN_MANDATORY_OPTIONS) throw new Exception(String.format(ERR_Q_MIN_OPTS, qNum));
+            if (options.size() > GRID_OPTIONS_ROWS) throw new Exception(String.format(ERR_Q_MAX_OPTS, qNum));
 
             return new Question(qText, options);
         }
